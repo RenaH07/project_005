@@ -486,18 +486,36 @@ function normalizeStim(raw){
     };
   }
   // 新: frames = [{x,y,...},...], settings に各種パラメータ
-  if (Array.isArray(raw?.frames) && raw?.settings) {
-    return {
-      W: raw.settings.W ?? 800,
-      H: raw.settings.H ?? 600,
-      BG: '#ffffff',
-      R: raw.settings.R ?? 30,
-      goal: raw.settings.USE_GOAL ? raw.settings.GOAL || null : null,
-      obstacle: raw.settings.USE_OBSTACLE ? raw.settings.OBSTACLE || null : null,
-      positions: raw.frames.map(f => ({x:f.x, y:f.y})),
-      color: '#333333'
-    };
-  }
+if (Array.isArray(raw?.frames) && raw?.settings) {
+  // JSONのどこに入っていても拾えるようにフォールバック順を用意
+  const bg =
+    (raw.settings && raw.settings.BG) ??
+    (raw.canvas && raw.canvas.background) ??
+    '#ffffff';
+
+  const ballColor =
+    (raw.settings && raw.settings.BALL_COLOR) ??
+    (raw.ball && raw.ball.color) ??
+    '#333333';
+
+  const goal =
+    raw.settings.USE_GOAL ? (raw.settings.GOAL || raw.goal || null) : null;
+
+  const obstacle =
+    raw.settings.USE_OBSTACLE ? (raw.settings.OBSTACLE || raw.obstacle || null) : null;
+
+  return {
+    W: (raw.settings.W ?? (raw.canvas && raw.canvas.width) ?? 800),
+    H: (raw.settings.H ?? (raw.canvas && raw.canvas.height) ?? 600),
+    BG: bg,
+    R: (raw.settings.R ?? raw.parameters?.radius ?? 30),
+    goal,
+    obstacle,
+    positions: raw.frames.map(f => ({ x: f.x, y: f.y })),
+    color: ballColor
+  };
+}
+
   // 不明形式
   return { W:800, H:600, BG:'#fff', R:30, positions:[] };
 }
@@ -701,7 +719,7 @@ timeline.push({
     <h3>操作説明</h3>
     <p>今から短い動画が再生されます。<br>
     再生が終わると、質問が表示されます。<br>
-    動画に表示される<strong>「黒い丸」<strong>に対する印象について回答してください。</p>
+    動画に表示される<strong>「黒い丸」</strong>に対する印象について回答してください。</p>
   `,
   choices: ['練習を始める'],
   // ★ 説明を読んでいる間に、練習2本を先読み
@@ -733,7 +751,7 @@ async function main(){
       <h3>本番開始</h3>
       <p>ここからが本番です。</p>
       <p>先ほどと同じように動画の再生が終わると、質問が表示されます。</p>
-      <p>動画に表示される<strong>「黒い丸」<strong>に対する印象について回答してください。</p>
+      <p>動画に表示される<strong>「黒い丸」</strong>に対する印象について回答してください。</p>
     `,
     choices: ['開始する']
   });
