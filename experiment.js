@@ -537,18 +537,42 @@ function makePlayback(file){
         }
         const ctx = cv.getContext('2d');
 
-        // ★ 先読み済みなら即取得、なければここで読み込み
+        // 刺激JSONの取得（先読み済みなら即返る）
         const data = await loadStimJson(file);
 
-        cv.width = data.W; cv.height = data.H;
+        // 内部解像度は刺激の素の大きさのまま
+        cv.width = data.W; 
+        cv.height = data.H;
+
+        // ★ 画面にフィットさせる（はみ出さないように自動縮小）
+        function fitCanvasToViewport(){
+          // 余白分（上下左右のパディング）として少しだけ差し引き
+          const padding = 48; 
+          const maxW = Math.max(320, (window.innerWidth || document.documentElement.clientWidth) - padding);
+          const maxH = Math.max(320, (window.innerHeight || document.documentElement.clientHeight) - padding);
+          // 縦横どちらにも収まる縮小率を採用（拡大はしない）
+          const scale = Math.min(maxW / data.W, maxH / data.H, 1);
+          cv.style.width = (data.W * scale) + 'px';
+          cv.style.height = (data.H * scale) + 'px';
+        }
+        fitCanvasToViewport();
+        window.addEventListener('resize', fitCanvasToViewport);
+        document.addEventListener('fullscreenchange', fitCanvasToViewport);
+
+        // ★ 終了時に後始末
+        function cleanup(){
+          window.removeEventListener('resize', fitCanvasToViewport);
+          document.removeEventListener('fullscreenchange', fitCanvasToViewport);
+        }
 
         let f = 0;
         function drawFrame(){
           const p = data.positions[f++];
-          if (!p) { jsPsych.finishTrial(); return; }
+          if (!p) { cleanup(); jsPsych.finishTrial(); return; }
 
           // 背景
-          ctx.fillStyle = data.BG; ctx.fillRect(0,0,data.W,data.H);
+          ctx.fillStyle = data.BG; 
+          ctx.fillRect(0,0,data.W,data.H);
 
           // goal
           if (data.goal){
@@ -567,7 +591,7 @@ function makePlayback(file){
           requestAnimationFrame(drawFrame);
         }
 
-        // ★ 初回はすぐ描画（1フレーム分の遅延を削減）
+        // すぐ1フレーム目を描画
         drawFrame();
 
       }catch(e){
@@ -578,6 +602,7 @@ function makePlayback(file){
     on_finish:(d)=>{ d.block='stim'; d.stimulus_file=file; }
   };
 }
+
 
 
 /***** 6) 刺激リスト … フォールバック上限を 12 本に修正（置き換え） *****/
