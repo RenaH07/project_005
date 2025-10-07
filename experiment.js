@@ -472,7 +472,29 @@ function makeFixation(ms=1000){
 
 /***** 5) 刺激の再生（Canvas／旧・新フォーマット両対応） *****/
 function normalizeStim(raw){
-  // 旧: ball.positions = [[x,y],...]
+  // ★新形式を先に判定（frames + settings）
+  if (Array.isArray(raw?.frames) && raw?.settings) {
+    const colors = raw.settings.COLORS || {};
+    const goalBase = raw.settings.GOAL || raw.goal || null;
+    const obstacleBase = raw.settings.OBSTACLE || raw.obstacle || null;
+    const goal = (raw.settings.USE_GOAL && goalBase)
+      ? Object.assign({}, goalBase, { color: (colors.goal || goalBase.color || '#ff6666') })
+      : null;
+    const obstacle = (raw.settings.USE_OBSTACLE && obstacleBase)
+      ? Object.assign({}, obstacleBase, { color: (colors.obstacle || obstacleBase.color || 'gray') })
+      : null;
+    return {
+      W: (raw.settings.W ?? raw.canvas?.width ?? 800),
+      H: (raw.settings.H ?? raw.canvas?.height ?? 600),
+      BG: (colors.bg || raw.settings.BG || raw.canvas?.background || '#ffffff'),
+      R: (raw.settings.R ?? raw.parameters?.radius ?? 30),
+      goal, obstacle,
+      positions: raw.frames.map(f => ({ x: f.x, y: f.y })),
+      color: (colors.ball || raw.settings.BALL_COLOR || raw.ball?.color || '#333333')
+    };
+  }
+
+  // 旧形式（ball.positions）
   if (raw?.ball && Array.isArray(raw.ball.positions)) {
     return {
       W: raw.canvas?.width ?? 800,
@@ -485,49 +507,10 @@ function normalizeStim(raw){
       color: raw.ball?.color ?? '#333333'
     };
   }
-// 新: frames = [{x,y,...},...], settings に各種パラメータ
-if (Array.isArray(raw?.frames) && raw?.settings) {
-  // どこに色があっても拾えるようにフォールバック順を用意
-  const colors = raw.settings.COLORS || {};
-  const bg =
-    colors.bg ||
-    raw.settings.BG ||
-    (raw.canvas && raw.canvas.background) ||
-    '#ffffff';
 
-  const ballColor =
-    colors.ball ||
-    raw.settings.BALL_COLOR ||
-    (raw.ball && raw.ball.color) ||
-    '#333333';
-
-  const goalBase = raw.settings.GOAL || raw.goal || null;
-  const obstacleBase = raw.settings.OBSTACLE || raw.obstacle || null;
-
-  const goal = (raw.settings.USE_GOAL && goalBase)
-    ? Object.assign({}, goalBase, { color: (colors.goal || goalBase.color || '#ff6666') })
-    : null;
-
-  const obstacle = (raw.settings.USE_OBSTACLE && obstacleBase)
-    ? Object.assign({}, obstacleBase, { color: (colors.obstacle || obstacleBase.color || 'gray') })
-    : null;
-
-  return {
-    W: (raw.settings.W ?? (raw.canvas && raw.canvas.width) ?? 800),
-    H: (raw.settings.H ?? (raw.canvas && raw.canvas.height) ?? 600),
-    BG: bg,
-    R: (raw.settings.R ?? raw.parameters?.radius ?? 30),
-    goal,
-    obstacle,
-    positions: raw.frames.map(f => ({ x: f.x, y: f.y })),
-    color: ballColor
-  };
-}
-
-
-  // 不明形式
   return { W:800, H:600, BG:'#fff', R:30, positions:[] };
 }
+
 
 /* === JSON 先読み用の簡易キャッシュ === */
 const STIM_CACHE = new Map();
