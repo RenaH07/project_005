@@ -551,7 +551,7 @@ function prefetchStim(file){
 function makePlayback(file){
   return {
     type:'html-keyboard-response',
-    stimulus:'<canvas id="cv" width="800" height="600" style="display:block;margin:0 auto;"></canvas>',
+    stimulus:'<canvas id="cv" width="800" height="600" style="display:block;margin:0 auto; outline:3px solid #6b7280; outline-offset:0; border-radius:8px;"></canvas>',
     choices: jsPsych.NO_KEYS,
     on_load: async function(){
       try{
