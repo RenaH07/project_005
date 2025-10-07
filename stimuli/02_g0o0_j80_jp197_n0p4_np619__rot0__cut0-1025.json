@@ -7,7 +7,7 @@
     "frameCount": 1026,
     "pathPx": 1299.3881728269937,
     "endReason": "manual",
-    "exportedAt": "2025-10-07T21:50:27.435Z",
+    "exportedAt": "2025-10-07T22:17:23.827Z",
     "exportNote": "rot=0, mirrorX=false, trim=[0,1025] / settings preserved, events included"
   },
   "settings": {
@@ -30,7 +30,7 @@
     },
     "R": 30,
     "SPEED": 80,
-    "USE_GOAL": 0,
+    "USE_GOAL": 1,
     "USE_OBSTACLE": 0,
     "JITTER_DEG": 80,
     "JITTER_STEP_DEG": 80,
@@ -9287,6 +9287,12 @@
       "y": 533.74
     }
   ],
+  "goal": {
+    "x": 750,
+    "y": 50,
+    "radius": 15,
+    "color": "#ff6666"
+  },
   "events": {
     "jitter": [
       {
