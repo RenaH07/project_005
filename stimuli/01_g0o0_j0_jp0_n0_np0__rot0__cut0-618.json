@@ -7,7 +7,7 @@
     "frameCount": 619,
     "pathPx": 828.5954471450434,
     "endReason": "manual",
-    "exportedAt": "2025-10-07T17:58:11.828Z",
+    "exportedAt": "2025-10-07T20:40:29.734Z",
     "exportNote": "rot=0, mirrorX=false, trim=[0,618] / settings preserved, events included"
   },
   "settings": {
@@ -29,7 +29,7 @@
     },
     "R": 30,
     "SPEED": 80,
-    "USE_GOAL": 0,
+    "USE_GOAL": 1,
     "USE_OBSTACLE": 0,
     "JITTER_DEG": 0,
     "JITTER_STEP_DEG": 0,
