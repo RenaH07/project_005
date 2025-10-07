@@ -485,24 +485,32 @@ function normalizeStim(raw){
       color: raw.ball?.color ?? '#333333'
     };
   }
-  // 新: frames = [{x,y,...},...], settings に各種パラメータ
+// 新: frames = [{x,y,...},...], settings に各種パラメータ
 if (Array.isArray(raw?.frames) && raw?.settings) {
-  // JSONのどこに入っていても拾えるようにフォールバック順を用意
+  // どこに色があっても拾えるようにフォールバック順を用意
+  const colors = raw.settings.COLORS || {};
   const bg =
-    (raw.settings && raw.settings.BG) ??
-    (raw.canvas && raw.canvas.background) ??
+    colors.bg ||
+    raw.settings.BG ||
+    (raw.canvas && raw.canvas.background) ||
     '#ffffff';
 
   const ballColor =
-    (raw.settings && raw.settings.BALL_COLOR) ??
-    (raw.ball && raw.ball.color) ??
+    colors.ball ||
+    raw.settings.BALL_COLOR ||
+    (raw.ball && raw.ball.color) ||
     '#333333';
 
-  const goal =
-    raw.settings.USE_GOAL ? (raw.settings.GOAL || raw.goal || null) : null;
+  const goalBase = raw.settings.GOAL || raw.goal || null;
+  const obstacleBase = raw.settings.OBSTACLE || raw.obstacle || null;
 
-  const obstacle =
-    raw.settings.USE_OBSTACLE ? (raw.settings.OBSTACLE || raw.obstacle || null) : null;
+  const goal = (raw.settings.USE_GOAL && goalBase)
+    ? Object.assign({}, goalBase, { color: (colors.goal || goalBase.color || '#ff6666') })
+    : null;
+
+  const obstacle = (raw.settings.USE_OBSTACLE && obstacleBase)
+    ? Object.assign({}, obstacleBase, { color: (colors.obstacle || obstacleBase.color || 'gray') })
+    : null;
 
   return {
     W: (raw.settings.W ?? (raw.canvas && raw.canvas.width) ?? 800),
@@ -515,6 +523,7 @@ if (Array.isArray(raw?.frames) && raw?.settings) {
     color: ballColor
   };
 }
+
 
   // 不明形式
   return { W:800, H:600, BG:'#fff', R:30, positions:[] };
