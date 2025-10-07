@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>図形の動きアンケート</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 404回避用の簡易favicon -->
+  <link rel="icon" href="data:,">
+  <!-- jsPsych v6.3.1 のCSS（ローカル） -->
+  <link rel="stylesheet" href="./jspsych.css">
+
+<style>
+  /* ===== レイアウトの共通変数（数字を変えれば全体が追随） ===== */
+  :root{
+    /* ページの最大幅：少し広げる（5文字を横に収めやすく） */
+    --page-max: min(96vw, 1040px);
+
+    /* バー横幅を Likert/SD で一致させるためのサイド幅
+       - Likert の左ラベル列 = --bar-side
+       - SD の左右アンカー列 = --bar-anchor（左右合計が --bar-side と等しい）
+       clamp で画面幅に合わせて可変（数値はお好みで微調整可） */
+    --bar-side: clamp(250px, 26vw, 320px);
+    --bar-anchor: calc(var(--bar-side) / 2);
+  }
+
+  /* ===== 画面中央寄せ（#jspsych-target をフレックス中央） ===== */
+  html, body { height: 100%; }
+  body { margin: 0; background: #f6f7fb; }
+  #jspsych-target{
+    min-height: 100vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 32px !important;
+    box-sizing: border-box !important;
+    overflow: auto !important;
+  }
+  /* 内側カードを中央に */
+  #jspsych-target .page-wrap{ max-width: var(--page-max) !important; margin: 0 auto !important; }
+  #jspsych-target > * { margin: 0 auto !important; }
+
+  /* ===== Likert：左ラベル列 + バー列 ===== */
+  #jspsych-target .lm-head,
+  #jspsych-target .lm-row{
+    grid-template-columns: var(--bar-side) 1fr !important;
+  }
+
+  /* ===== SD：左アンカー + バー列 + 右アンカー（左右合計＝Likert左列と同じ） ===== */
+  #jspsych-target .sd-head,
+  #jspsych-target .sd-row{
+    grid-template-columns: var(--bar-anchor) 1fr var(--bar-anchor) !important;
+  }
+
+  /* ===== 尺度ラベル（バー上の5つ）— 任意位置で改行OK =====
+     - \n（改行文字）も <br> も両方有効に
+     - 下寄せで丸とラインに揃える */
+  #jspsych-target .lm-scale-head > div,
+  #jspsych-target .sd-scale-head > div{
+    white-space: pre-line !important;  /* ← \n を改行として表示。<br> もそのまま効く */
+    word-break: normal !important;
+    line-height: 1.15 !important;
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: center !important;
+    padding-bottom: 2px !important;
+  }
+</style>
+
+
+</head>
+<body>
+
+  <!-- Netlify Forms が投稿先を認識するための隠しフォーム（必須） -->
+<!-- Netlify Forms の隠しフォーム（検出用） -->
+<form name="experiment-data" method="POST" data-netlify="true" netlify netlify-honeypot="bot-field" hidden>
+  <!-- この hidden は“おまじない”的に効きが良いです -->
+  <input type="hidden" name="form-name" value="experiment-data">
+  <!-- 実データ用のフィールド（jsでJSON文字列を入れてPOST） -->
+  <input type="text" name="data">
+  <!-- ハニーポット（スパム対策） -->
+  <input type="text" name="bot-field">
+</form>
+
+  <noscript>
+    <p style="max-width:680px;margin:24px auto;padding:12px;background:#fff;border:1px solid #e5e7eb;border-radius:8px">
+      このページを表示するには JavaScript を有効にしてください。
+    </p>
+  </noscript>
+
+  <!-- jsPsych が描画する領域 -->
+  <div id="jspsych-target"></div>
+
+  <!-- ===== jsPsych Core ===== -->
+  <script src="./jspsych.js"></script>
+
+  <!-- ===== 必要プラグイン（v6形式） ===== -->
+  <script src="./plugins/jspsych-fullscreen.js"></script>
+  <script src="./plugins/jspsych-html-keyboard-response.js"></script>
+  <script src="./plugins/jspsych-html-button-response.js"></script>
+  <script src="./plugins/jspsych-survey-html-form.js"></script>
+  <script src="./plugins/jspsych-survey-likert.js"></script>
+
+  <!-- ===== 本体スクリプト（moduleで読み込み） ===== -->
+  <script type="module" src="./experiment.js"></script>
+</body>
+</html>
