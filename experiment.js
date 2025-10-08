@@ -640,6 +640,31 @@ async function preloadStimuliList(){
 /***** 7) タイムライン *****/
 const timeline = [];
 
+// ===== 同意ゲート =====
+window.CONSENT_OK = null;  // まだ未回答: null / 同意: true / 不同意: false
+
+// 同意があるときだけ、この中のタイムラインが実行される
+const CONSENT_GATE = {
+  conditional_function: () => window.CONSENT_OK === true,
+  timeline: []
+};
+
+// 同意しない場合にだけ表示する終了ページ
+const DECLINED = {
+  conditional_function: () => window.CONSENT_OK === false,
+  timeline: [{
+    type: 'html-button-response',
+    stimulus: 'ここまでお読みくださり誠にありがとうございました。<br>同意が得られなかったため、調査は行われませんでした。',
+    choices: ['終了する'],
+    on_finish: () => { try { if (document.fullscreenElement) document.exitFullscreen?.(); } catch(e){} }
+  }]
+};
+
+// ゲートと終了ページの順で差し込む（この前に同意確認が来る）
+timeline.push(CONSENT_GATE);
+timeline.push(DECLINED);
+
+
 // ==== イントロダクション（同意） ====
 timeline.push({
   type: 'html-button-response',
@@ -694,26 +719,21 @@ timeline.push({
     }
   },
 
-  // 「同意しない」のときは終了
-  on_finish: function(data){
+  // 「同意しない」のときは CONSENT_OK を false にする（endExperiment は使わない）
+on_finish: function(data){
   // 0: 同意する, 1: 同意しない（数値/文字列どちらでも来る可能性に対応）
-  const idx = (typeof data.button_pressed === 'number')
+  const btn = (typeof data.button_pressed === 'number')
     ? data.button_pressed
-    : Number.parseInt(data.button_pressed, 10);
+    : parseInt(data.button_pressed, 10);
 
-  if (idx === 1) {
-    try { if (document.fullscreenElement) document.exitFullscreen?.(); } catch(e){}
-    jsPsych.endExperiment(
-      "ここまでお読みくださり誠にありがとうございました。<br>同意が得られなかったため、調査は行われませんでした。"
-    );
-    return; // 念のため
-  }
+  window.CONSENT_OK = (btn === 0);  // 同意: true / 不同意: false
 }
+
 });
 
 
 // 操作説明
-timeline.push({
+CONSENT_GATE.timeline.push({
   type: 'html-button-response',
   stimulus: `
     <h3>操作説明</h3>
@@ -735,9 +755,9 @@ const practiceFiles = [
   'stimuli/t2_g1o0_j40_jp197_n0p2_np619.json'
 ];
 for (let i=0;i<practiceFiles.length;i++){
-  timeline.push(makeFixation(FIX_MS));
-  timeline.push(makePlayback(practiceFiles[i]));
-  timeline.push(makeSurveyPage({ includeIMC:false, allowFreeText:true, phase:'practice' }));
+  CONSENT_GATE.timeline.push(makeFixation(FIX_MS));
+  CONSENT_GATE.timeline.push(makePlayback(practiceFiles[i]));
+  CONSENT_GATE.timeline.push(makeSurveyPage({ includeIMC:false, allowFreeText:true, phase:'practice' }));
 }
 
 /***** 8) 本番ブロックを非同期で構築 → jsPsych.init *****/
@@ -745,7 +765,7 @@ async function main(){
   const stimFiles = await preloadStimuliList();
 
   // ★ 練習→本番のブリッジ（ここからが本番です）
-  timeline.push({
+  CONSENT_GATE.timeline.push({
     type: 'html-button-response',
     stimulus: `
       <h3>本番開始</h3>
@@ -773,13 +793,13 @@ prefetchStim(order[0]);
 prefetchStim(order[1]);
 
   order.forEach((file, idx)=>{
-    timeline.push(makeFixation(FIX_MS));
-    timeline.push(makePlayback(file));
+    CONSENT_GATE.timeline.push(makeFixation(FIX_MS));
+    CONSENT_GATE.timeline.push(makePlayback(file));
 
     const n = idx + 1;
     const isLast = (n === order.length);     // ★ 最後のページだけ IMC（しれっと行）を含める
 
-    timeline.push(makeSurveyPage({
+    CONSENT_GATE.timeline.push(makeSurveyPage({
       includeIMC: isLast,
       allowFreeText: true,
       phase: 'main'
@@ -787,7 +807,7 @@ prefetchStim(order[1]);
   });
 
   // 終了アンケート（年齢・性別）
-  timeline.push({
+  CONSENT_GATE.timeline.push({
     type: 'survey-html-form',
     preamble: '<h3>最後に、年齢と性別をお聞かせください。</h3>',
     html: `
@@ -804,7 +824,7 @@ prefetchStim(order[1]);
   });
 
 // 最終自由記述（任意）→ この on_finish で送信→終了まで持っていく
-timeline.push({
+CONSENT_GATE.timeline.push({
   type: 'survey-html-form',
   preamble:'<h3>ご意見・ご感想（任意）</h3><p>調査全体を通して気づいたことがあればご記入ください。</p>',
   html:`<textarea name="comment" rows="4" style="width:100%"></textarea>`,
