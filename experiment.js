@@ -694,20 +694,21 @@ timeline.push({
     }
   },
 
-  // 「同意しない」のときは終了（※v6は button_pressed が '0'|'1' の文字列）
+  // 「同意しない」のときは終了
   on_finish: function(data){
-    // v6系：button_pressed は数値（0: 同意する, 1: 同意しない）
-    const btn = (typeof data.button_pressed === 'number')
-      ? data.button_pressed
-      : parseInt(data.button_pressed, 10);
-    if (btn === 1) {
-      // 念のためフルスクリーン解除
-      try { if (document.fullscreenElement) document.exitFullscreen(); } catch(e){}
-      jsPsych.endExperiment(
-        "ここまでお読みくださり誠にありがとうございました。<br>同意が得られなかったため、調査は行われませんでした。"
-      );
-    }
+  // v6系：button_pressed は数値（0: 同意する, 1: 同意しない）。文字列だった場合にも対応
+  const btn = (typeof data.button_pressed === 'number')
+    ? data.button_pressed
+    : parseInt(data.button_pressed, 10);
+
+  if (btn === 1) {
+    // 念のためフルスクリーン解除
+    try { if (document.fullscreenElement) document.exitFullscreen(); } catch(e){}
+    jsPsych.endExperiment(
+      "ここまでお読みくださり誠にありがとうございました。<br>同意が得られなかったため、調査は行われませんでした。"
+    );
   }
+}
 });
 
 
