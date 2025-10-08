@@ -656,13 +656,13 @@ const DECLINED = {
     type: 'html-button-response',
     stimulus: 'ここまでお読みくださり誠にありがとうございました。<br>同意が得られなかったため、調査は行われませんでした。',
     choices: ['終了する'],
-    on_finish: () => { try { if (document.fullscreenElement) document.exitFullscreen?.(); } catch(e){} }
+    on_finish: () => { try { if (document.fullscreenElement) document.exitFullscreen?.(); } catch(e){} jsPsych.endExperiment('ご協力ありがとうございました。<br>同意が得られなかったため、調査は行われませんでした。<br><br>このウィンドウを閉じて終了してください。'); }
   }]
 };
 
 // ゲートと終了ページの順で差し込む（この前に同意確認が来る）
-timeline.push(CONSENT_GATE);
-timeline.push(DECLINED);
+// [moved] timeline.push(CONSENT_GATE);
+// [moved] timeline.push(DECLINED);
 
 
 // ==== イントロダクション（同意） ====
@@ -733,6 +733,10 @@ on_finish: function(data){
 
 
 // 操作説明
+timeline.push(CONSENT_GATE);
+
+timeline.push(DECLINED);
+
 CONSENT_GATE.timeline.push({
   type: 'html-button-response',
   stimulus: `
