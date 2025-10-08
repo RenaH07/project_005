@@ -696,17 +696,17 @@ timeline.push({
 
   // 「同意しない」のときは終了
   on_finish: function(data){
-  // v6系：button_pressed は数値（0: 同意する, 1: 同意しない）。文字列だった場合にも対応
-  const btn = (typeof data.button_pressed === 'number')
+  // 0: 同意する, 1: 同意しない（数値/文字列どちらでも来る可能性に対応）
+  const idx = (typeof data.button_pressed === 'number')
     ? data.button_pressed
-    : parseInt(data.button_pressed, 10);
+    : Number.parseInt(data.button_pressed, 10);
 
-  if (btn === 1) {
-    // 念のためフルスクリーン解除
-    try { if (document.fullscreenElement) document.exitFullscreen(); } catch(e){}
+  if (idx === 1) {
+    try { if (document.fullscreenElement) document.exitFullscreen?.(); } catch(e){}
     jsPsych.endExperiment(
       "ここまでお読みくださり誠にありがとうございました。<br>同意が得られなかったため、調査は行われませんでした。"
     );
+    return; // 念のため
   }
 }
 });
@@ -854,7 +854,7 @@ jsPsych.pauseExperiment();
         if (document.fullscreenElement) document.exitFullscreen?.();
         jsPsych.endExperiment(
           'データの送信手続きを継続しています（通信が回復すると自動で完了します）。<br>' +
-          'ご協力ありがとうございました。<br><br>このウィンドウを閉じて終了してください。'
+          'ご協力誠にありがとうございました。<br><br>このウィンドウを閉じて終了してください。'
         );
         // ★ 再開して終了処理を進める
         jsPsych.resumeExperiment();
