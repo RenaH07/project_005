@@ -702,7 +702,7 @@ timeline.push({
       try { if (document.fullscreenElement) document.exitFullscreen?.(); } catch(e){}
 
       jsPsych.endExperiment(
-        "ここまでお読みくださり誠にありがとうございました。<br>同意が得られなかったため、調査は行われませんでした。"
+        "ご協力ありがとうございました。<br>同意が得られなかったため、調査は行われませんでした。<br><br>このウィンドウを閉じて終了してください。"
       );
     }, { capture: true, once: true });
   }
@@ -718,7 +718,7 @@ timeline.push({
   if (idx === 1) {
     try { if (document.fullscreenElement) document.exitFullscreen?.(); } catch(e){}
     jsPsych.endExperiment(
-      "ここまでお読みくださり誠にありがとうございました。<br>同意が得られなかったため、調査は行われませんでした。"
+      "ご協力ありがとうございました。<br>同意が得られなかったため、調査は行われませんでした。<br><br>このウィンドウを閉じて終了してください。"
     );
     return; // 念のため
   }
